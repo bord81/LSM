@@ -51,7 +51,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private float[] mProjMatrixText = new float[16];
     private float[] mVMatrixText = new float[16];
     private float[] mVPMatrixText = new float[16];
-    private float[] text_positions = new float[24];
+    private float[] text_positions = new float[26];
     private float[] dots_positions = {-0.54f, -0f,
             -0.34f, -0.18f,
             -0.14f, -0.25f,
@@ -60,6 +60,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     //0 and 6 x coordinates
     private final float X0 = -0.74f;
     private final float X6 = 0.46f;
+    private String equation = new String();
 
     OpenGLRenderer(Context context) {
         this.context = context;
@@ -124,9 +125,10 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         glText.draw("10", text_positions[18], text_positions[19]);
         glText.end();
         glText.begin(1.0f, 0.0f, 0.0f, 1.0f, mVPMatrixText);
+        glText.draw(equation, text_positions[24], text_positions[25], 90);
         glText.draw("LSM", text_positions[20], text_positions[21]);
         glText.end();
-        glText.begin(1.0f, 1.0f, 0.0f, 1.0f, mVPMatrixText);
+        glText.begin(0.9f, 0.9f, 0.0f, 1.0f, mVPMatrixText);
         glText.draw("LAGRANGE", text_positions[22], text_positions[23]);
         glText.end();
         //draw other objects
@@ -142,11 +144,11 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         glLineWidth(5);
         glUniform4f(uColorLocation, 1.0f, 0.0f, 0.0f, 1.0f);
         glDrawArrays(GL_LINES, 22, 2);
-        glUniform4f(uColorLocation, 1.0f, 1.0f, 0.0f, 1.0f);
+        glUniform4f(uColorLocation, 0.9f, 0.9f, 0.0f, 1.0f);
         glDrawArrays(GL_LINES, 24, 2);
         glUniform4f(uColorLocation, 0.6f, 0.196f, 0.8f, 1.0f);
         glDrawArrays(GL_POINTS, 26, 5);
-        glUniform4f(uColorLocation, 1.0f, 1.0f, 0.0f, 1.0f);
+        glUniform4f(uColorLocation, 0.9f, 0.9f, 0.0f, 1.0f);
         glDrawArrays(GL_LINE_STRIP, 31, 7);
         glUniform4f(uColorLocation, 1.0f, 0.0f, 0.0f, 1.0f);
         glDrawArrays(GL_LINE_STRIP, 38, 7);
@@ -176,7 +178,29 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         lsm_x_vals[6] = 0.46f;
         LSMData lsmData = LSM.lsmPolynom(xyTable_lagr, 3, lsm_x_vals);
         float[] lsm_points = lsmData.getF_vals();
-
+        float[] lsm_eq_coefs = lsmData.getEq_coefs();
+        StringBuilder eq = new StringBuilder();
+        eq.append("y = ");
+        float round = 0f;
+        for (int i = 0; i < lsm_eq_coefs.length; i++) {
+            if (i > 0) {
+                if (lsm_eq_coefs[i] > 0) {
+                    round = Math.round(lsm_eq_coefs[i] * 100.0f) / 100.0f;
+                    eq.append("+");
+                    eq.append(round);
+                } else {
+                    round = Math.abs(Math.round(lsm_eq_coefs[i] * 100.0f) / 100.0f);
+                    eq.append("-");
+                    eq.append(round);
+                }
+                eq.append("*x^");
+                eq.append(i);
+            } else {
+                round = Math.round(lsm_eq_coefs[i] * 100.0f) / 100.0f;
+                eq.append(round);
+            }
+        }
+        equation = eq.toString();
         float[] vertices = {
 //        axis y line
                 -0.8f, -0.95f, -0.8f, 0.95f,
@@ -273,6 +297,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         text_positions[21] = 0.8f * height / 2;
         text_positions[22] = 0.76f * width / 2;
         text_positions[23] = 0.7f * height / 2;
+        //LSM equation text
+        text_positions[24] = -0.9f * width / 2;
+        text_positions[25] = -0.75f * height / 2;
     }
 
     private void bindData() {

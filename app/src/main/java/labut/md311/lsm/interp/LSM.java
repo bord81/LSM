@@ -3,6 +3,7 @@ package labut.md311.lsm.interp;
 public class LSM {
 
     public static LSMData lsmPolynom(float[][] xyTable, int basis, float[] vals) {
+        basis++;
         float[][] matrix_intern = makeSystem(xyTable, basis);
         float[] result_intern = gauss(matrix_intern, basis, basis + 1);
         float[] f_vals = new float[vals.length];
